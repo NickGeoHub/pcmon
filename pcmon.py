@@ -43,18 +43,21 @@ def find_port():
         print(f"Trying port: {port.device}")
         try:
             ser = serial.Serial(port.device)
-            ser.write("HELLO_ARDUINO\n".encode())
-            time.sleep(10)
+            time.sleep(6)
+            ser.write("HELLO_,".encode())
             while True:
-                ser.write("HELLO_ARDUINO\n".encode())
                 print(f"loop")
                 if ser.in_waiting > 0:
-                    print(ser.readline().decode())
-                    if ser.readline().decode() == "HELLO_PYTHON\n":
+                    time.sleep(1)
+                    a = ser.read_all().decode()
+                    print(a)
+                    if a == "HELLO_PYTHON,":
                         # an erti an me2 ikos
                         print(f"Success at {port.device}.")
                         serial_port = port.device
                         return port.device
+                    else:
+                        print("got another message!")
                 else:
                     time.sleep(1)
 

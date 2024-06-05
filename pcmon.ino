@@ -16,7 +16,7 @@ int pulse_in(uint8_t pin, uint8_t state, int timeout_ms){
     timeout_ms -timeout milliseconds;*/
     unsigned long start = millis();
     while (digitalRead(pin) != state){
-    delay(10);
+        delay(10);
         if ((millis()-start) >= timeout_ms){
             return 0;
         }
@@ -37,6 +37,7 @@ void wait_serial(int limit_sec = 0){
             }
         }
     }
+    delay(200);
     return 0;
 }
 
@@ -44,7 +45,6 @@ void wait_serial(int limit_sec = 0){
 
 // ======================================================== SETUP
 void setup() {
-    delay(delay_time*1000);
     // pins
     pinMode(butt_pin, INPUT_PULLUP);
 
@@ -58,22 +58,29 @@ void setup() {
     lcd.print("Please run .py");
 
     // Serial
-    lcd.print("!S");
     Serial.begin(9600);
+
     wait_serial();
-    if (Serial.readStringUntil("\n")=="HELLO_PYTHON"){
+    String a = Serial.readStringUntil(",");
+    
+    if (a=="HELLO_,"){
         lcd.clear();
         lcd.print("message got");
-        Serial.print("HELLO_PYTHON\n");
+        delay(100);
+        Serial.print("HELLO_PYTHON,");
+        lcd.print(". S!");
 
     } else {
         // if port not python port....
         // while (1){delay(100);}
         lcd.clear();
-        lcd.print("no py port");
+        lcd.print("gotAnotherMesage");
         // lcd.print(Serial.readStringUntil("\n"));
 
     }
+    lcd.setCursor(1,1);
+    lcd.print(a);
+    delay(5000);
 }
 
 
