@@ -1,6 +1,6 @@
 // board file
 #include <LiquidCrystal_I2C.h>
-LiquidCrystal_I2C lcd(0x27);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // pins
 #define butt_pin 13
@@ -31,7 +31,7 @@ void wait_serial(int limit_sec = 0){
     while (Serial.available() <= 0){}
   } else {
     int start_time = millis();
-    while (Serial.available() <= 1){
+    while (Serial.available() <= 0){
       delay(10);
       if (millis()-start_time >= limit_sec*1000){
         return (millis()-start_time);
@@ -45,6 +45,7 @@ void wait_serial(int limit_sec = 0){
 
 // ======================================================== SETUP
 void setup() {
+    delay(2000);
     // pins
     pinMode(butt_pin, INPUT_PULLUP);
     pinMode(relay_pin, OUTPUT);
@@ -58,14 +59,21 @@ void setup() {
     lcd.print("Please run .py");
 
     // Serial
-    Serial.begin(9600);
+    // while (!Serial.begin(9600);){}
+    lcd.print("!S")
     wait_serial();
     if (Serial.readStringUntil("\n")=="HELLO_PYTHON\n"){
-        Serial.print("HELLO_PYTHON\n")
+        lcd.clear()
+        lcd.print("message got")
+        Serial.print("HELLO_PYTHON\n");
 
     } else {
         // if port not python port....
-        while (1){delay(100)}
+        // while (1){delay(100);}
+        lcd.clear();
+        lcd.print("m:");
+        lcd.print(Serial.readStringUntil("\n"))
+
     }
 }
 
@@ -76,12 +84,12 @@ void loop() {
 // output
     lcd.clear();
     lcd.print("batt:");
-    lcd.print(var_battery_percentage);
-    lcd.print("%,");
-    lcd.print(var_charge_state_real);
-    lcd.setCursor(0, 1);
-    lcd.print("lu:");
-    lcd.print(last_updated_sec);
+    // lcd.print(var_battery_percentage);
+    // lcd.print("%,");
+    // lcd.print(var_charge_state_real);
+    // lcd.setCursor(0, 1);
+    // lcd.print("lu:");
+    // lcd.print(last_updated_sec);
 
 
     // act
@@ -90,6 +98,6 @@ void loop() {
     if (pulse_in(butt_pin, 0, delay_time*1000) != 0){
     // if button interupted:
     digitalWrite(butt_led_pin, 1);
-    update_all();  // update values
+    // update_all();  // update values
     }
 }

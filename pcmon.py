@@ -44,9 +44,11 @@ def find_port():
         try:
             ser = serial.Serial(port.device)
             ser.write("HELLO_ARDUINO\n".encode())
-            for i in range(2):
-                # print(f"loop {i}")
-                if ser.in_waiting > 1:
+            time.sleep(10)
+            while True:
+                ser.write("HELLO_ARDUINO\n".encode())
+                print(f"loop")
+                if ser.in_waiting > 0:
                     print(ser.readline().decode())
                     if ser.readline().decode() == "HELLO_PYTHON\n":
                         # an erti an me2 ikos
