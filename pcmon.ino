@@ -1,11 +1,10 @@
 // board file
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // pins
 #define butt_pin 13
-#define relay_pin 12
-#define butt_led_pin 11
 
 // values
 #define delay_time 1
@@ -27,52 +26,52 @@ int pulse_in(uint8_t pin, uint8_t state, int timeout_ms){
 
 
 void wait_serial(int limit_sec = 0){
-  if (limit_sec == 0){
-    while (Serial.available() <= 0){}
-  } else {
-    int start_time = millis();
-    while (Serial.available() <= 0){
-      delay(10);
-      if (millis()-start_time >= limit_sec*1000){
-        return (millis()-start_time);
-      }
+    if (limit_sec == 0){
+        while (Serial.available() <= 0){}
+    } else {
+        int start_time = millis();
+        while (Serial.available() <= 0){
+            delay(10);
+            if (millis()-start_time >= limit_sec*1000){
+                return (millis()-start_time);
+            }
+        }
     }
-  }
-  return 0;
+    return 0;
 }
 
 
 
 // ======================================================== SETUP
 void setup() {
-    delay(2000);
+    delay(delay_time*1000);
     // pins
     pinMode(butt_pin, INPUT_PULLUP);
-    pinMode(relay_pin, OUTPUT);
-    pinMode(butt_led_pin, OUTPUT);
 
     // lcd
     lcd.init();
     lcd.backlight();
-    lcd.print("Hello!");
+    lcd.print("Hello!!");
     lcd.setCursor(0, 1);
+    lcd.setCursor(0, 0);
+    lcd.clear();
     lcd.print("Please run .py");
 
     // Serial
-    // while (!Serial.begin(9600);){}
-    lcd.print("!S")
+    lcd.print("!S");
+    Serial.begin(9600);
     wait_serial();
-    if (Serial.readStringUntil("\n")=="HELLO_PYTHON\n"){
-        lcd.clear()
-        lcd.print("message got")
+    if (Serial.readStringUntil("\n")=="HELLO_PYTHON"){
+        lcd.clear();
+        lcd.print("message got");
         Serial.print("HELLO_PYTHON\n");
 
     } else {
         // if port not python port....
         // while (1){delay(100);}
         lcd.clear();
-        lcd.print("m:");
-        lcd.print(Serial.readStringUntil("\n"))
+        lcd.print("no py port");
+        // lcd.print(Serial.readStringUntil("\n"));
 
     }
 }
@@ -97,7 +96,7 @@ void loop() {
     // UPDATING starts here -----
     if (pulse_in(butt_pin, 0, delay_time*1000) != 0){
     // if button interupted:
-    digitalWrite(butt_led_pin, 1);
+    // digitalWrite(butt_led_pin, 1);
     // update_all();  // update values
     }
 }
