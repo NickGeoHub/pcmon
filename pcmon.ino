@@ -10,10 +10,6 @@ LiquidCrystal_I2C lcd(0x27);
 // values
 #define delay_time 1
 
-String var_battery_percentage;  // current %
-String var_charge_state_real;  // charge state
-
-
 int pulse_in(uint8_t pin, uint8_t state, int timeout_ms){
     /* new pulse_in function for miliseconds
     returns 0 if timeout or int value miliseconds needed to pulse
@@ -29,11 +25,23 @@ int pulse_in(uint8_t pin, uint8_t state, int timeout_ms){
     return (millis()-start);
 }
 
-// wait serial function
 
-void charge_pc(){
-    digitalWrite(relay_pin, 1);
+void wait_serial(int limit_sec = 0){
+  if (limit_sec == 0){
+    while (Serial.available() <= 0){}
+  } else {
+    int start_time = millis();
+    while (Serial.available() <= 1){
+      delay(10);
+      if (millis()-start_time >= limit_sec*1000){
+        return (millis()-start_time);
+      }
+    }
+  }
+  return 0;
 }
+
+
 
 // ======================================================== SETUP
 void setup() {
@@ -51,6 +59,14 @@ void setup() {
 
     // Serial
     Serial.begin(9600);
+    wait_serial();
+    if (Serial.readStringUntil("\n")=="HELLO_PYTHON\n"){
+        Serial.print("HELLO_PYTHON\n")
+
+    } else {
+        // if port not python port....
+        while (1){delay(100)}
+    }
 }
 
 
@@ -75,5 +91,5 @@ void loop() {
     // if button interupted:
     digitalWrite(butt_led_pin, 1);
     update_all();  // update values
-}
+    }
 }
