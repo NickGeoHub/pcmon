@@ -29,6 +29,7 @@ class myArduino():
         communicate(self.ser)
 """
 
+
 def get_battery_percentage() -> int:
     battery = psutil.sensors_battery()
     if battery is not None:
@@ -111,9 +112,21 @@ def main():
     while True:
         info_battery_percentage = get_battery_percentage()
         info_battery_charge_state = get_battery_charge_state()
-        if info_battery_percentage < BATT_LOW and not info_battery_charge_state or True:
-            print("charge pc sent")
-            act_charge_pc()
+        for i in range(1000):
+            # TODO axla aq gvinda sixshireebi
+            # tu sixshire aris 10 mashin kvela me-10 loop-ze daUpdatdes
+            # tu sixshire aris 1 mashin kvela loopze update
+            # i%{sixshire}
+            # kvela sidides ro tavisi sixshire qondes xom ar shevqmna klasi?
+            # class batteryPercentage():
+            #     self.sicshire
+            #     self.value
+            #     def update(self):
+            #         update()
+            if info_battery_percentage < BATT_LOW and\
+               not info_battery_charge_state or True:
+                print("charge pc sent")
+                act_charge_pc()
 
 
 if __name__ == "__main__":
