@@ -1,7 +1,6 @@
 # python file
 
 
-
 import serial
 import serial.tools.list_ports
 import time
@@ -12,6 +11,7 @@ import os
 WAIT_CHAR = 0.003  # max second needed to transmit all data
 
 # ----------------------------------------------------------------------------
+
 
 def get_battery_percentage() -> str:
     battery = psutil.sensors_battery()
@@ -56,7 +56,8 @@ def find_port():
                         ser.close()
                         return port.device
                     else:
-                        print("got another message!")  # TODO continue to next port, not next loop
+                        print("got another message!")
+                        # TODO continue to next port, not next loop
                         continue
                 else:
                     time.sleep(0.1)  # simple time for break
@@ -65,7 +66,6 @@ def find_port():
             ser.close()
             continue
     return None
-
 
 
 if __name__ == "__main__":
