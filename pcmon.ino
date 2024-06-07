@@ -27,17 +27,17 @@ int pulse_in(uint8_t pin, uint8_t state, int timeout_ms){
 
 void wait_serial(int limit_sec = 0){
     if (limit_sec == 0){
-        while (Serial.available() <= 0){}
+        while (Serial.available() == 0){delay(5);}
     } else {
         int start_time = millis();
-        while (Serial.available() <= 0){
-            delay(10);
+        while (Serial.available() == 0){
+            delay(5);
             if (millis()-start_time >= limit_sec*1000){
                 return (millis()-start_time);
             }
         }
     }
-    delay(200);
+    delay(20);
     return 0;
 }
 

@@ -63,7 +63,7 @@ def find_port():
                     time.sleep(0.1)  # simple time for break
 
         except serial.SerialException:
-            ser.close()
+            # ser.close()
             continue
     return None
 
