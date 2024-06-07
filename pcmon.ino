@@ -80,6 +80,11 @@ void loop() {
 // output
     lcd.clear();
     lcd.print("batt:");
+    wait_serial();
+    if (Serial.readStringUntil(";") == "charge_pc;"){
+        lcd.clear();
+        lcd.print("pc is carging!");
+    }
     // lcd.print(var_battery_percentage);
     // lcd.print("%,");
     // lcd.print(var_charge_state_real);
@@ -89,6 +94,7 @@ void loop() {
 
 
     // act
+    delay(100);
 
     // UPDATING starts here -----
     if (pulse_in(butt_pin, 0, delay_time*1000) != 0){
