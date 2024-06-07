@@ -31,7 +31,7 @@ void wait_serial(int limit_sec = 0){
     } else {
         int start_time = millis();
         while (Serial.available() == 0){
-            delay(5);
+            delay(10);
             if (millis()-start_time >= limit_sec*1000){
                 return (millis()-start_time);
             }
@@ -51,36 +51,26 @@ void setup() {
     // lcd
     lcd.init();
     lcd.backlight();
-    lcd.print("Hello!!");
-    lcd.setCursor(0, 1);
-    lcd.setCursor(0, 0);
     lcd.clear();
     lcd.print("Please run .py");
 
     // Serial
     Serial.begin(9600);
-
     wait_serial();
     String a = Serial.readStringUntil(";");
-    
+    lcd.clear();
+    lcd.setCursor(0,1);
+    lcd.print(a);
+    lcd.setCursor(0,0);
     if (a=="HELLO_ARDUINO;"){
-        lcd.clear();
-        lcd.print("message got");
-        delay(100);
+        lcd.print("message got!");
         Serial.print("HELLO_PYTHON;");
-        lcd.print(". S!");
-
     } else {
         // if port not python port....
-        // while (1){delay(100);}
-        lcd.clear();
         lcd.print("gotAnotherMesage");
-        // lcd.print(Serial.readStringUntil("\n"));
-
+        while (1){delay(100);}
     }
-    lcd.setCursor(1,1);
-    lcd.print(a);
-    delay(5000);
+    delay(1000);
 }
 
 
