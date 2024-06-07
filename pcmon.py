@@ -14,8 +14,11 @@ WAIT_CHAR = 0.003  # max second needed to transmit all data
 
 # ----------------------------------------------------------------------------
 
+
 class myArduino():
-    def __init__(self, port: str, baudrate: int=9600):
+    def __init__(self,
+                 port: str,
+                 baudrate: int = 9600):
         self.ser = serial.Serial(port, baudrate)
         communicate(self.ser)
 
@@ -33,6 +36,7 @@ def get_battery_charge_state() -> str:
         return "Charging"
     else:
         return "Discharging"
+
 
 def act_charge_pc() -> None:
     pass
@@ -65,7 +69,7 @@ def communicate(ser: serial.Serial):
         else:
             time.sleep(0.1)
     raise serial.SerialException()
-    
+
 
 def find_port():
     ports = serial.tools.list_ports.comports()
@@ -89,9 +93,9 @@ def find_port():
     print("No correct port found")
     return None
 
+
 def main():
     my_arduino = myArduino(port=find_port())
-
 
 
 if __name__ == "__main__":
