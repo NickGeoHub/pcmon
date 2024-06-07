@@ -61,13 +61,13 @@ void setup() {
     Serial.begin(9600);
 
     wait_serial();
-    String a = Serial.readStringUntil(",");
+    String a = Serial.readStringUntil(";");
     
-    if (a=="HELLO_,"){
+    if (a=="HELLO_ARDUINO;"){
         lcd.clear();
         lcd.print("message got");
         delay(100);
-        Serial.print("HELLO_PYTHON,");
+        Serial.print("HELLO_PYTHON;");
         lcd.print(". S!");
 
     } else {

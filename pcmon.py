@@ -46,25 +46,26 @@ def find_port():
         try:
             ser = serial.Serial(port.device)
             time.sleep(6)
-            ser.write("HELLO_,".encode())
+            ser.write("HELLO_ARDUINO;".encode())
             while True:
                 if ser.in_waiting > 0:
                     time.sleep(WAIT_CHAR)
-                    a = ser.read_until(',')
-                    if a == "HELLO_PYTHON,":
+                    a = ser.read_all().decode()
+                    ser.close()  # we don't need port anymore
+                    if a == "HELLO_PYTHON;":
                         print(f"Success at {port.device}.")
-                        ser.close()
                         return port.device
                     else:
-                        print("got another message!")
-                        # TODO continue to next port, not next loop
-                        continue
+                        print(f"Got message: {a}")
+
+                        break
                 else:
                     time.sleep(0.1)  # simple time for break
 
         except serial.SerialException:
             # ser.close()
             continue
+    print("No ports found")
     return None
 
 
