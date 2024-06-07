@@ -9,6 +9,8 @@ import psutil
 import os
 
 
+WAIT_CHAR = 0.003  # max second needed to transmit all data
+
 # ----------------------------------------------------------------------------
 
 def get_battery_percentage() -> str:
@@ -36,37 +38,35 @@ def find_port():
     print(f"Found {len(ports)} ports.")
 
     if len(ports) > 1:
-        print(f"found ports: {','.join([port.device for port in ports])}.")
+        # print(f"found ports: {','.join([port.device for port in ports])}.")
         time.sleep(2)
 
     for port in ports:
-        print(f"Trying port: {port.device}")
+        # print(f"Trying port: {port.device}")
         try:
             ser = serial.Serial(port.device)
             time.sleep(6)
             ser.write("HELLO_,".encode())
             while True:
-                print(f"loop")
                 if ser.in_waiting > 0:
-                    time.sleep(1)
-                    a = ser.read_all().decode()
-                    print(a)
+                    time.sleep(WAIT_CHAR)
+                    a = ser.read_until(',')
                     if a == "HELLO_PYTHON,":
-                        # an erti an me2 ikos
                         print(f"Success at {port.device}.")
-                        serial_port = port.device
+                        ser.close()
                         return port.device
                     else:
-                        print("got another message!")
+                        print("got another message!")  # TODO continue to next port, not next loop
+                        continue
                 else:
-                    time.sleep(1)
+                    time.sleep(0.1)  # simple time for break
 
         except serial.SerialException:
-            print(f"Port {port.device} error.")
+            ser.close()
             continue
     return None
 
+
+
 if __name__ == "__main__":
     print(find_port())
-
-
