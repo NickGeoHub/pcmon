@@ -8,9 +8,16 @@ import psutil
 import os
 
 
+TEXT_TO_SEND = "HELLO_ARDUINO;"
+TEXT_TO_GET = "HELLO_PYTHON;"
 WAIT_CHAR = 0.003  # max second needed to transmit all data
 
 # ----------------------------------------------------------------------------
+
+class myArduino():
+    def __init__(self, port: str, baudrate: int=9600):
+        self.ser = serial.Serial(port, baudrate)
+        communicate(self.ser)
 
 
 def get_battery_percentage() -> str:
@@ -27,11 +34,38 @@ def get_battery_charge_state() -> str:
     else:
         return "Discharging"
 
+def act_charge_pc() -> None:
+    pass
+
 
 def test():
     print(get_battery_percentage())
     print(get_battery_charge_state())
 
+
+def is_correct_port(port: str):
+    ser = serial.Serial(port)
+    try:
+        communicate(ser)
+        return True
+    except serial.SerialException:
+        return False
+
+
+def communicate(ser: serial.Serial):
+    time.sleep(4)
+    ser.write(TEXT_TO_SEND.encode())
+    while True:
+        if ser.in_waiting > 0:
+            time.sleep(WAIT_CHAR)
+            a = ser.read_all().decode()
+            ser.close()  # we don't need port anymore
+            if a == TEXT_TO_GET:
+                return
+        else:
+            time.sleep(0.1)
+    raise serial.SerialException()
+    
 
 def find_port():
     ports = serial.tools.list_ports.comports()
@@ -44,30 +78,21 @@ def find_port():
     for port in ports:
         # print(f"Trying port: {port.device}")
         try:
-            ser = serial.Serial(port.device)
-            time.sleep(6)
-            ser.write("HELLO_ARDUINO;".encode())
-            while True:
-                if ser.in_waiting > 0:
-                    time.sleep(WAIT_CHAR)
-                    a = ser.read_all().decode()
-                    ser.close()  # we don't need port anymore
-                    if a == "HELLO_PYTHON;":
-                        print(f"Success at {port.device}.")
-                        return port.device
-                    else:
-                        print(f"Got message: {a}")
-
-                        break
-                else:
-                    time.sleep(0.1)  # simple time for break
-
+            if is_correct_port(port.device):
+                print(f"Success at {port.device}.")
+                return port.device
+            else:
+                print(f"Got message: {a}")
+                break
         except serial.SerialException:
-            # ser.close()
             continue
-    print("No ports found")
+    print("No correct port found")
     return None
+
+def main():
+    my_arduino = myArduino(port=find_port())
+
 
 
 if __name__ == "__main__":
-    print(find_port())
+    main()
