@@ -11,7 +11,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 int pulse_in(uint8_t pin, uint8_t state, int timeout_ms){
     /* new pulse_in function for miliseconds
-    returns 0 if timeout or int value miliseconds needed to pulse
+    returns 0 if timeout or int value ms needed to pulse
     pin - pin;  state - HIGH or LOW;
     timeout_ms -timeout milliseconds;*/
     unsigned long start = millis();
@@ -25,14 +25,16 @@ int pulse_in(uint8_t pin, uint8_t state, int timeout_ms){
 }
 
 
-void wait_serial(int limit_sec = 0){
-    if (limit_sec == 0){
+void wait_serial(int limit_ms = 0){
+    // waits serial data to appear
+    if (limit_ms == 0){
         while (Serial.available() == 0){delay(5);}
     } else {
         int start_time = millis();
         while (Serial.available() == 0){
             delay(10);
-            if (millis()-start_time >= limit_sec*1000){
+            if (millis()-start_time >= limit_ms*1000){
+                delay(20);
                 return (millis()-start_time);
             }
         }
@@ -43,7 +45,7 @@ void wait_serial(int limit_sec = 0){
 
 
 
-// ======================================================== SETUP
+// ============================================== SETUP
 void setup() {
     // pins
     pinMode(butt_pin, INPUT_PULLUP);
@@ -74,13 +76,13 @@ void setup() {
 }
 
 
-// ======================================================== LOOP
+// ============================================== LOOP
 void loop() {
 
 // output
     lcd.clear();
     lcd.print("batt:");
-    wait_serial();
+    wait_serial(100);
     if (Serial.readStringUntil(";") == "charge_pc;"){
         lcd.clear();
         lcd.print("pc is carging!");
