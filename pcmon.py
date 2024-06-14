@@ -102,7 +102,7 @@ def find_port():
                 print(f"Success at {port.device}.")
                 return port.device
             else:
-                print(f"Got message: {a}")
+                print(f"Got another message on (may) correct port")
                 break
         except serial.SerialException:
             continue
