@@ -81,6 +81,8 @@ def communicate(ser: serial.Serial):
             a = ser.read_all().decode()
             if a == TEXT_TO_GET:
                 return
+            else:
+                break
         else:
             time.sleep(0.1)
     raise serial.SerialException()
