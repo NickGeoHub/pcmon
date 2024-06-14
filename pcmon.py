@@ -25,16 +25,6 @@ class PortNotFoundError(Exception):
     pass
 
 
-"""
-class myArduino():
-    def __init__(self,
-                 port: str,
-                 baudrate: int = 9600):
-        self.ser = serial.Serial(port, baudrate)
-        communicate(self.ser)
-"""
-
-
 def get_battery_percentage() -> int:
     battery = psutil.sensors_battery()
     if battery is not None:
@@ -110,7 +100,6 @@ def find_port():
     raise PortNotFoundError()
 
 def main():
-    # my_arduino = myArduino(port=find_port())
     global ser
     ser = serial.Serial(find_port())
     communicate(ser)
