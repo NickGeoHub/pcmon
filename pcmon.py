@@ -48,11 +48,6 @@ def act_charge_pc() -> None:
     ser.write(b"charge_pc;")
 
 
-def test():
-    print(get_battery_percentage())
-    print(get_battery_charge_state())
-
-
 def is_correct_port(port: str):
     ser = serial.Serial(port)
     try:
@@ -82,11 +77,21 @@ def find_port():
     ports = serial.tools.list_ports.comports()
     print(f"Found {len(ports)} ports.")
 
-    if len(ports) > 0:
-        print(f"found ports: {','.join([port.device for port in ports])}.")
-
+    arduino_ports = list()
     for port in ports:
-        # print(f"Trying port: {port.device}")
+        if 'Arduino' in port.description or\
+        'ttyUSB' in port.device or\
+        'ttyACM' in port.device or\
+            True:
+            arduino_ports.append(port)
+    
+    print(f"Found potential arduino ports: "\
+          f"{','.join([port.device for port in ports])}.")
+
+    for port in arduino_ports:
+        print(f"\nTrying port: {port.device}")
+        print(f"Port.description = {port.description}")
+        print(f"")
         try:
             if is_correct_port(port.device):
                 print(f"Success at {port.device}.")
@@ -126,6 +131,16 @@ def main():
             #     def update(self):
             #         update()
 
+
+def test():
+    find_port()
+
+try:
+    test()
+except Exception as e:
+    print(f"=========\nexception")
+    exit(1)
+exit(0)
 
 if __name__ == "__main__":
     while True:

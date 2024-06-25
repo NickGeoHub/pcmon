@@ -25,15 +25,17 @@ int pulse_in(uint8_t pin, uint8_t state, int timeout_ms){
 }
 
 
-void wait_serial(int limit_ms = 0){
-    // waits serial data to appear
+unsigned long wait_serial(unsigned long limit_ms = 0){
+    // waits for serial data to appear
     if (limit_ms == 0){
-        while (Serial.available() == 0){delay(5);}
-    } else {
-        int start_time = millis();
         while (Serial.available() == 0){
-            delay(10);
-            if (millis()-start_time >= limit_ms*1000){
+            delay(5);
+        }
+    } else {
+        unsigned long start_time = millis();
+        while (Serial.available() == 0){
+            delay(5);
+            if (millis()-start_time >= limit_ms){
                 delay(20);
                 return (millis()-start_time);
             }
@@ -59,12 +61,12 @@ void setup() {
     // Serial
     Serial.begin(9600);
     wait_serial();
-    String a = Serial.readStringUntil(";");
+    String message_got = Serial.readStringUntil(";");
     lcd.clear();
     lcd.setCursor(0,1);
-    lcd.print(a);
+    lcd.print(message_got);
     lcd.setCursor(0,0);
-    if (a=="HELLO_ARDUINO;"){
+    if (message_got=="HELLO_ARDUINO;"){
         lcd.print("message got!");
         Serial.print("HELLO_PYTHON;");
     } else {
@@ -82,6 +84,8 @@ void loop() {
 // output
     lcd.clear();
     lcd.print("batt:");
+
+    
     wait_serial(100);
     if (Serial.readStringUntil(";") == "charge_pc;"){
         lcd.clear();
