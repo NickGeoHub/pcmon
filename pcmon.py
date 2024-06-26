@@ -75,12 +75,12 @@ def find_port():
     arduino_ports = list()
     for port in ports:
         if 'arduino' in port.description.lower() or\
-        'serial' in port.description.lower() or \
-        'ttyUSB' in port.device or\
-        'ttyACM' in port.device:
+           'serial' in port.description.lower() or \
+           'ttyUSB' in port.device or\
+           'ttyACM' in port.device:
             arduino_ports.append(port)
-    
-    print(f"Found {len(arduino_ports)} potential arduino ports: "\
+
+    print(f"Found {len(arduino_ports)} potential arduino ports: "
           f"{','.join([port.device for port in arduino_ports])}.")
 
     for port in arduino_ports:
@@ -98,18 +98,12 @@ def find_port():
     print("No correct port found")
     raise PortNotFoundError()
 
+
 def main():
     global ser
     ser = serial.Serial(find_port())
     communicate(ser)
 
-
-
-
-
-
-
-    
     while True:
         for i in range(10000):
             # BATTERY
@@ -117,10 +111,10 @@ def main():
                 info_battery_percentage = get_battery_percentage()
                 info_battery_charge_state = get_battery_charge_state()
                 if info_battery_percentage < BATT_LOW and\
-                not info_battery_charge_state:
+                   not info_battery_charge_state:
                     print("charge pc sent")
                     act_charge_pc()
-            
+
             time.sleep(0.1)
             # TODO axla aq gvinda sixshireebi
             # tu sixshire aris 10 mashin kvela me-10 loop-ze daUpdatdes
@@ -136,6 +130,7 @@ def main():
 
 def test():
     find_port()
+
 
 try:
     test()
