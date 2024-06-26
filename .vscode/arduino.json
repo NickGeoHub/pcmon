@@ -1,4 +1,5 @@
 {
     "board": "arduino:avr:uno",
-    "sketch": "pcmon.ino"
+    "sketch": "pcmon.ino",
+    "port": "/dev/ttyUSB0"
 }

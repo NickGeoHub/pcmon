@@ -35,16 +35,10 @@ def get_battery_percentage() -> int:
 def get_battery_charge_state() -> str:
     battery = psutil.sensors_battery()
     return battery.power_plugged
-    """
-    if battery.power_plugged:
-        return "Charging"
-    else:
-        return "Discharging"
-    """
 
 
 def act_charge_pc() -> None:
-    time.sleep(5)
+    time.sleep(5)  # why is this?
     ser.write(b"charge_pc;")
 
 
@@ -67,7 +61,7 @@ def communicate(ser: serial.Serial):
             if a == TEXT_TO_GET:
                 return
             else:
-                break
+                break  # TODO raise exception if timeout too
         else:
             time.sleep(0.1)
     raise serial.SerialException()
@@ -79,19 +73,18 @@ def find_port():
 
     arduino_ports = list()
     for port in ports:
-        if 'Arduino' in port.description or\
+        if 'arduino' in port.description.lower() or\
+        'serial' in port.description.lower() or \
         'ttyUSB' in port.device or\
-        'ttyACM' in port.device or\
-            True:
+        'ttyACM' in port.device:
             arduino_ports.append(port)
     
-    print(f"Found potential arduino ports: "\
-          f"{','.join([port.device for port in ports])}.")
+    print(f"Found {len(arduino_ports)} potential arduino ports: "\
+          f"{','.join([port.device for port in arduino_ports])}.")
 
     for port in arduino_ports:
-        print(f"\nTrying port: {port.device}")
-        print(f"Port.description = {port.description}")
-        print(f"")
+        print(f"Trying port: {port.device}")
+        # print(f"Port.description = {port.description}")
         try:
             if is_correct_port(port.device):
                 print(f"Success at {port.device}.")
