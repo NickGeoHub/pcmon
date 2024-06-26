@@ -1,0 +1,2 @@
+batt_p;      = battery percentage
+batt_c;      = battery charge state

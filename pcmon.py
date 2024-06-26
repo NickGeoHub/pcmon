@@ -16,7 +16,7 @@ TEXT_TO_SEND = "HELLO_ARDUINO;"
 TEXT_TO_GET = "HELLO_PYTHON;"
 BATT_LOW = 20
 BATT_HIGH = 80
-WAIT_CHAR = 0.003  # max second needed to transmit all data
+WAIT_CHAR = 20  # max milisecond needed to transmit all data
 
 # ----------------------------------------------------------------------------
 
@@ -32,7 +32,7 @@ def get_battery_percentage() -> int:
     return "NoBatteryInfo"
 
 
-def get_battery_charge_state() -> str:
+def get_battery_charge_state() -> bool:
     battery = psutil.sensors_battery()
     return battery.power_plugged
 
@@ -56,9 +56,10 @@ def communicate(ser: serial.Serial):
     ser.write(TEXT_TO_SEND.encode())
     while True:
         if ser.in_waiting > 0:
-            time.sleep(WAIT_CHAR)
+            time.sleep(WAIT_CHAR/1000)
             a = ser.read_all().decode()
             if a == TEXT_TO_GET:
+                time.sleep(1)
                 return
             else:
                 break  # TODO raise exception if timeout too
@@ -101,6 +102,14 @@ def main():
     global ser
     ser = serial.Serial(find_port())
     communicate(ser)
+
+
+
+
+
+
+
+    
     while True:
         for i in range(10000):
             # BATTERY

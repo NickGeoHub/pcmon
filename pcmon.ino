@@ -8,6 +8,12 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // values
 #define delay_time 1
+#define WAIT_CHAR 20 
+
+String message_got;
+
+int battery_percentage;
+bool battery_charge_state;
 
 int pulse_in(uint8_t pin, uint8_t state, int timeout_ms){
     /* new pulse_in function for miliseconds
@@ -26,23 +32,25 @@ int pulse_in(uint8_t pin, uint8_t state, int timeout_ms){
 
 
 unsigned long wait_serial(unsigned long limit_ms = 0){
-    // waits for serial data to appear
+    /* waits for serial data to appear.returns:
+           0 - if timeout
+           unsigned long - if data appeared */
+    
+    unsigned long start_time = millis();
     if (limit_ms == 0){
         while (Serial.available() == 0){
             delay(5);
         }
-    } else {
-        unsigned long start_time = millis();
+        delay(WAIT_CHAR);  // wait char to send
+        return (millis()-start_time);
+    } else {  // given timeout
         while (Serial.available() == 0){
             delay(5);
             if (millis()-start_time >= limit_ms){
-                delay(20);
-                return (millis()-start_time);
+                return 0;
             }
         }
     }
-    delay(20);
-    return 0;
 }
 
 
@@ -61,7 +69,7 @@ void setup() {
     // Serial
     Serial.begin(9600);
     wait_serial();
-    String message_got = Serial.readStringUntil(";");
+    message_got = Serial.readStringUntil(";");
     lcd.clear();
     lcd.setCursor(0,1);
     lcd.print(message_got);
@@ -80,13 +88,29 @@ void setup() {
 
 // ============================================== LOOP
 void loop() {
-
-// output
+    // =-=-=-=-=-=-=-=-=-=-====-=-=-=-=-==-=-==-=-=-=-=-/
+    // output
     lcd.clear();
-    lcd.print("batt:");
+    lcd.print("loop started!");
 
-    
-    wait_serial(100);
+
+    if (wait_serial(100) == 0){  // no data
+        // = delay
+        // some delay and user interupt analize
+    } else {  // data
+        // update message got, data analize
+        // = update values
+        // = update lcd
+        message_got = Serial.readStringUntil('=');
+
+        if (message_got == "batt_p="){
+            wait_serial();
+            battery_percentage = Serial.readStringUntil(';').toInt();
+        }
+    }
+
+
+
     if (Serial.readStringUntil(";") == "charge_pc;"){
         lcd.clear();
         lcd.print("pc is carging!");
