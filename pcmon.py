@@ -80,22 +80,22 @@ def find_port():
            'ttyACM' in port.device:
             arduino_ports.append(port)
 
-    print(f"Found {len(arduino_ports)} potential arduino ports: "
+    print(f"Found {len(arduino_ports)} potential arduino port(s): "
           f"{','.join([port.device for port in arduino_ports])}.")
 
     for port in arduino_ports:
-        print(f"Trying port: {port.device}")
+        print(f"Trying port: {port.device}.")
         # print(f"Port.description = {port.description}")
         try:
             if is_correct_port(port.device):
                 print(f"Success at {port.device}.")
                 return port.device
             else:
-                print(f"Got another message on (may) correct port")
+                print(f"Fail at: {port.device}.")
                 break
         except serial.SerialException:
             continue
-    print("No correct port found")
+    print("No correct port found!")
     raise PortNotFoundError()
 
 
