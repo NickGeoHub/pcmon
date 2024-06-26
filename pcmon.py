@@ -54,7 +54,7 @@ def is_correct_port(port: str):
 def communicate(ser: serial.Serial):
     time.sleep(4)
     ser.write(TEXT_TO_SEND.encode())
-    while True:
+    for i in range(100):  # TODO timeout by predefined value
         if ser.in_waiting > 0:
             time.sleep(WAIT_CHAR/1000)
             a = ser.read_all().decode()
@@ -62,7 +62,7 @@ def communicate(ser: serial.Serial):
                 time.sleep(1)
                 return
             else:
-                break  # TODO raise exception if timeout too
+                break
         else:
             time.sleep(0.1)
     raise serial.SerialException()
