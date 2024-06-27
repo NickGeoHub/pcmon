@@ -15,7 +15,7 @@ String message_got;
 int battery_percentage;
 bool battery_charge_state;
 
-int pulse_in(uint8_t pin, uint8_t state, int timeout_ms){
+int pulse_in(uint8_t pin, uint8_t state, unsigned long timeout_ms=1000){
     /* new pulse_in function for miliseconds
     returns 0 if timeout or int value ms needed to pulse
     pin - pin;  state - HIGH or LOW;
@@ -52,6 +52,7 @@ unsigned long wait_serial(unsigned long limit_ms = 0){
         }
     }
 }
+
 
 
 

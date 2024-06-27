@@ -4,10 +4,10 @@ import serial
 import serial.tools.list_ports
 import time
 import psutil
-import os
+# import os
 
 info_battery_percentage: int
-info_battery_charge_state: str
+info_battery_charge_state: bool
 f_battery = 100
 
 ser: serial.Serial
@@ -100,10 +100,11 @@ def find_port():
 
 
 def main():
-    global ser
+    global ser  # why?
     ser = serial.Serial(find_port())
     communicate(ser)
 
+    """ delete this and write again better
     while True:
         for i in range(10000):
             # BATTERY
@@ -126,10 +127,11 @@ def main():
             #     self.value
             #     def update(self):
             #         update()
+    """
 
 
 def test():
-    find_port()
+    print(f"ARDUINO PORT IS: {find_port()}")
 
 
 try:
