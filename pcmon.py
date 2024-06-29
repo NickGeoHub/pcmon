@@ -4,7 +4,7 @@ import serial
 import serial.tools.list_ports
 import time
 import psutil
-import os
+
 
 info_battery_percentage: int
 info_battery_charge_state: str
@@ -16,20 +16,18 @@ TEXT_TO_SEND = "HELLO_ARDUINO;"
 TEXT_TO_GET = "HELLO_PYTHON;"
 BATT_LOW = 20
 BATT_HIGH = 80
-WAIT_CHAR = 20  # max milisecond needed to transmit all data
+WAIT_CHAR = 20
+# max milisecond needed to transmit all data
 
 # ----------------------------------------------------------------------------
-
-
-class PortNotFoundError(Exception):
-    pass
 
 
 def get_battery_percentage() -> int:
     battery = psutil.sensors_battery()
     if battery is not None:
         return int(battery.percent)
-    return "NoBatteryInfo"
+    else:
+        return 0
 
 
 def get_battery_charge_state() -> bool:
@@ -38,11 +36,11 @@ def get_battery_charge_state() -> bool:
 
 
 def act_charge_pc() -> None:
-    time.sleep(5)  # why is this?
+    # time.sleep(5)  # why is this?
     ser.write(b"charge_pc;")
 
 
-def is_correct_port(port: str):
+def is_correct_port(port: str) -> bool:
     ser = serial.Serial(port)
     try:
         communicate(ser)
@@ -51,15 +49,16 @@ def is_correct_port(port: str):
         return False
 
 
-def communicate(ser: serial.Serial):
+def communicate(ser: serial.Serial) -> None:
     time.sleep(4)
     ser.write(TEXT_TO_SEND.encode())
-    for i in range(100):  # TODO timeout by predefined value
+    for i in range(100):
+        # TODO timeout by predefined value
         if ser.in_waiting > 0:
             time.sleep(WAIT_CHAR/1000)
             a = ser.read_all().decode()
             if a == TEXT_TO_GET:
-                time.sleep(1)
+                # time.sleep(1)
                 return
             else:
                 break
@@ -70,7 +69,7 @@ def communicate(ser: serial.Serial):
 
 def find_port():
     ports = serial.tools.list_ports.comports()
-    print(f"Found {len(ports)} ports.")
+    # print(f"Found {len(ports)} ports.")
 
     arduino_ports = list()
     for port in ports:
@@ -96,7 +95,7 @@ def find_port():
         except serial.SerialException:
             continue
     print("No correct port found!")
-    raise PortNotFoundError()
+    raise serial.SerialException()
 
 
 def main():
@@ -143,7 +142,7 @@ if __name__ == "__main__":
     while True:
         try:
             main()
-        except PortNotFoundError:
+        except serial.SerialException:
             time.sleep(5)
             continue
         except KeyboardInterrupt:
