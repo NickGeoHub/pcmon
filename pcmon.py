@@ -2,6 +2,8 @@
 
 # added some line
 
+# another line
+
 import serial
 import serial.tools.list_ports
 import time
