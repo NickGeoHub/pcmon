@@ -1,8 +1,5 @@
 # python file
 
-# hello here
-# added 4 th line
-
 import serial
 import serial.tools.list_ports
 import time
