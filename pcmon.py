@@ -121,6 +121,8 @@ def main():
                      info_battery_charge_state:
                     print("unpluging battery")
                     act_charge_pc(0)
+                else:
+                    print("doing nothing with battery!")
 
             # WAIT
             time.sleep(0.1)
