@@ -5,12 +5,14 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // pins
 #define butt_pin 13
+#define relayPin 12
 
 // values
 #define delay_time 1
 #define WAIT_CHAR 20 
 
-String message_got;
+String command_got;
+String argumrnts_got;
 
 int battery_percentage;
 bool battery_charge_state;
@@ -59,6 +61,7 @@ unsigned long wait_serial(unsigned long limit_ms = 0){
 void setup() {
     // pins
     pinMode(butt_pin, INPUT_PULLUP);
+    pinMode(relayPin, OUTPUT);
 
     // lcd
     lcd.init();
@@ -69,14 +72,14 @@ void setup() {
     // Serial
     Serial.begin(9600);
     wait_serial();
-    message_got = Serial.readStringUntil(";");
+    command_got = Serial.readStringUntil(';');
     lcd.clear();
     lcd.setCursor(0,1);
-    lcd.print(message_got);
+    lcd.print(command_got);
     lcd.setCursor(0,0);
-    if (message_got=="HELLO_ARDUINO;"){
+    if (command_got=="HELLO_ARDUINO"){
         lcd.print("message got!");
-        Serial.print("HELLO_PYTHON;");
+        Serial.print("HELLO_PYTHON");
     } else {
         // if port not python port....
         lcd.print("gotAnotherMesage");
@@ -94,27 +97,33 @@ void loop() {
     lcd.print("loop started!");
 
 
-    if (wait_serial(100) == 0){  // no data
+    if (wait_serial(200) == 0){  // no data
         // = delay
         // some delay and user interupt analize
     } else {  // data
         // update message got, data analize
         // = update values
         // = update lcd
-        message_got = Serial.readStringUntil('=');
-
-        if (message_got == "batt_p="){
+        command_got = Serial.readStringUntil('>');
+        argumrnts_got = Serial.readStringUntil(';');
+        lcd.clear();
+        lcd.print(command_got);
+        lcd.setCursor(0, 1);
+        lcd.print(argumrnts_got);
+        if (command_got == "batt_p"){
             wait_serial();
-            battery_percentage = Serial.readStringUntil(';').toInt();
+            battery_percentage = argumrnts_got.toInt();
+        } else if (command_got == "charge_pc"){
+            if (argumrnts_got == "0"){
+                digitalWrite(relayPin, 0);}
+            else {
+                digitalWrite(relayPin, 1);
+            }
         }
     }
 
 
-
-    if (Serial.readStringUntil(";") == "charge_pc;"){
-        lcd.clear();
-        lcd.print("pc is carging!");
-    }
+    
     // lcd.print(var_battery_percentage);
     // lcd.print("%,");
     // lcd.print(var_charge_state_real);

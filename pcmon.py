@@ -13,7 +13,7 @@ f_battery = 100
 ser: serial.Serial
 
 TEXT_TO_SEND = "HELLO_ARDUINO;"
-TEXT_TO_GET = "HELLO_PYTHON;"
+TEXT_TO_GET = "HELLO_PYTHON"
 BATT_LOW = 20
 BATT_HIGH = 80
 WAIT_CHAR = 20
@@ -22,6 +22,7 @@ WAIT_CHAR = 20
 # ----------------------------------------------------------------------------
 
 
+# get info from pc
 def get_battery_percentage() -> int:
     battery = psutil.sensors_battery()
     if battery is not None:
@@ -35,11 +36,13 @@ def get_battery_charge_state() -> bool:
     return battery.power_plugged
 
 
-def act_charge_pc() -> None:
-    # time.sleep(5)  # why is this?
-    ser.write(b"charge_pc;")
+# send commands & values to arduino
+def act_charge_pc(val: int = 1) -> None:
+    # plug or unplug pc
+    ser.write(f"charge_pc>{str(val)}".encode())
 
 
+# port configuration
 def is_correct_port(port: str) -> bool:
     ser = serial.Serial(port)
     try:
@@ -98,6 +101,7 @@ def find_port():
     raise serial.SerialException()
 
 
+# main function. (entry)
 def main():
     global ser
     ser = serial.Serial(find_port())
@@ -112,8 +116,13 @@ def main():
                 if info_battery_percentage < BATT_LOW and\
                    not info_battery_charge_state:
                     print("charge pc sent")
-                    act_charge_pc()
+                    act_charge_pc(1)
+                elif info_battery_percentage > BATT_HIGH and\
+                     info_battery_charge_state:
+                    print("unpluging battery")
+                    act_charge_pc(0)
 
+            # WAIT
             time.sleep(0.1)
             # TODO axla aq gvinda sixshireebi
             # tu sixshire aris 10 mashin kvela me-10 loop-ze daUpdatdes
@@ -127,16 +136,17 @@ def main():
             #         update()
 
 
+# test() for debug only
 def test():
-    find_port()
-
-
-try:
-    test()
-except Exception as e:
-    print(f"=========\nexception")
+    try:
+        find_port()
+        exit(0)
+    except Exception:
+        print("EXCEPTION !!!")
     exit(1)
-exit(0)
+
+
+# test()
 
 if __name__ == "__main__":
     while True:
