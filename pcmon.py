@@ -14,8 +14,8 @@ ser: serial.Serial
 
 TEXT_TO_SEND = "HELLO_ARDUINO;"
 TEXT_TO_GET = "HELLO_PYTHON"
-BATT_LOW = 20
-BATT_HIGH = 80
+BATT_LOW = 40
+BATT_HIGH = 70
 WAIT_CHAR = 20
 # max milisecond needed to transmit all data
 
@@ -42,6 +42,10 @@ def act_charge_pc(val: int = 1) -> None:
     ser.write(f"charge_pc>{str(val)}".encode())
 
 
+def wait_char():
+    time.sleep(WAIT_CHAR/1000)
+
+
 # port configuration
 def is_correct_port(port: str) -> bool:
     ser = serial.Serial(port)
@@ -53,13 +57,14 @@ def is_correct_port(port: str) -> bool:
 
 
 def communicate(ser: serial.Serial) -> None:
-    time.sleep(4)
+    time.sleep(6)
     ser.write(TEXT_TO_SEND.encode())
     for i in range(100):
         # TODO timeout by predefined value
         if ser.in_waiting > 0:
-            time.sleep(WAIT_CHAR/1000)
+            wait_char()
             a = ser.read_all().decode()
+            print(a)
             if a == TEXT_TO_GET:
                 # time.sleep(1)
                 return
@@ -109,6 +114,14 @@ def main():
 
     while True:
         for i in range(10000):
+            if True:
+                if ser.in_waiting != 0:
+                    wait_char()
+                    command, arguments = ser.read_until(';').split('>')
+                    if command == "hello" and arguments == "python":
+                        ser.write(b"hello arduino")
+
+
             # BATTERY
             if not i % f_battery:  # if i%f_battery == 0:
                 info_battery_percentage = get_battery_percentage()
@@ -152,6 +165,8 @@ def test():
 
 if __name__ == "__main__":
     while True:
+        main()
+        exit()
         try:
             main()
         except serial.SerialException:
