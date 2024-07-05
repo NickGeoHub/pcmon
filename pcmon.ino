@@ -119,7 +119,7 @@ void loop() {
     if (wait_serial(400) == 0){  // no data
         // = delay
         // some delay and user interupt analize
-        delay(20000);
+        delay(10000);
         Serial.print("hello>python;");
         wait_serial();
         command_got = Serial.readStringUntil('>');

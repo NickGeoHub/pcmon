@@ -59,12 +59,12 @@ def is_correct_port(port: str) -> bool:
 def communicate(ser: serial.Serial) -> None:
     time.sleep(6)
     ser.write(TEXT_TO_SEND.encode())
-    for i in range(100):
+    for _ in range(100):
         # TODO timeout by predefined value
         if ser.in_waiting > 0:
             wait_char()
             a = ser.read_all().decode()
-            print(a)
+            print(f"got message from arduino: {a}")
             if a == TEXT_TO_GET:
                 # time.sleep(1)
                 return
@@ -116,8 +116,10 @@ def main():
         for i in range(10000):
             if True:
                 if ser.in_waiting != 0:
+                    print("==something appeared!==")
                     wait_char()
-                    command, arguments = ser.read_until(';').split('>')
+                    command, arguments = ser.read_until(b';').decode().split('>')
+                    print(f"command={command}\nargs={arguments}")
                     if command == "hello" and arguments == "python":
                         ser.write(b"hello arduino")
 
@@ -151,7 +153,7 @@ def main():
             #         update()
 
 
-# test() for debug only
+# use test() for debug only
 def test():
     try:
         find_port()
@@ -165,8 +167,8 @@ def test():
 
 if __name__ == "__main__":
     while True:
-        main()
-        exit()
+        # main()
+        # exit()
         try:
             main()
         except serial.SerialException:
