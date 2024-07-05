@@ -8,11 +8,11 @@ import psutil
 
 info_battery_percentage: int
 info_battery_charge_state: str
-f_battery = 100
+f_battery = 200
 
 ser: serial.Serial
 
-TEXT_TO_SEND = "HELLO_ARDUINO;"
+TEXT_TO_SEND = "HELLO_>ARDUINO;"
 TEXT_TO_GET = "HELLO_PYTHON"
 BATT_LOW = 40
 BATT_HIGH = 70
@@ -33,7 +33,7 @@ def get_battery_percentage() -> int:
 
 def get_battery_charge_state() -> bool:
     battery = psutil.sensors_battery()
-    return battery.power_plugged
+    return bool(battery.power_plugged)
 
 
 # send commands & values to arduino
@@ -42,8 +42,11 @@ def act_charge_pc(val: int = 1) -> None:
     ser.write(f"charge_pc>{str(val)}".encode())
 
 
-def wait_char():
-    time.sleep(WAIT_CHAR/1000)
+def wait_char(t = None):
+    if t is None:
+        time.sleep(WAIT_CHAR/1000)
+    else:
+        time.sleep(t/1000)
 
 
 # port configuration
@@ -57,7 +60,7 @@ def is_correct_port(port: str) -> bool:
 
 
 def communicate(ser: serial.Serial) -> None:
-    time.sleep(6)
+    time.sleep(5)
     ser.write(TEXT_TO_SEND.encode())
     for _ in range(100):
         # TODO timeout by predefined value
@@ -114,16 +117,36 @@ def main():
 
     while True:
         for i in range(10000):
-            if True:
+            # get data from arduino
+            if not i % 5:
                 if ser.in_waiting != 0:
-                    print("==something appeared!==")
-                    wait_char()
-                    command, arguments = ser.read_until(b';').decode().split('>')
-                    print(f"command={command}\nargs={arguments}")
-                    if command == "hello" and arguments == "python":
-                        ser.write(b"hello arduino")
+                    # print("==something appeared!==")
+                    wait_char(0.6)
+                    a = ser.read_until(b';').decode()
+                    print(f"here==={a}")
+                    command, arguments = a.strip(';').split('>')
+                    # print("message from arduino".center(50, "="))
+                    # print(f"command={command}\nargs={arguments}")  # #
+                    if command == "log":
+                        print(f"Arduino: log: {arguments}")
+                    
+                    if command + arguments == TEXT_TO_GET:
+                        ser.write(TEXT_TO_SEND.encode())
+                    elif command == "get":
+                        if arguments == "all":
+                            print("get all detected!!!!")
+                            ser.write(str(f"batt_p>{get_battery_percentage()};").encode())
+                            ser.write(str(f"batt_c>{int(get_battery_charge_state())};").encode())
+                            pass
+
+                        elif arguments == "batt_p":
+                            ser.write(str(f"batt_p>{get_battery_percentage()};").encode())
+
+                        elif arguments == "batt_c":
+                            ser.write(str(f"batt_c>{int(get_battery_charge_state())};").encode())
 
 
+            # give data to arduino if it is time!
             # BATTERY
             if not i % f_battery:  # if i%f_battery == 0:
                 info_battery_percentage = get_battery_percentage()
@@ -141,16 +164,7 @@ def main():
 
             # WAIT
             time.sleep(0.1)
-            # TODO axla aq gvinda sixshireebi
-            # tu sixshire aris 10 mashin kvela me-10 loop-ze daUpdatdes
-            # tu sixshire aris 1 mashin kvela loopze update
-            # i%{sixshire}
-            # kvela sidides ro tavisi sixshire qondes xom ar shevqmna klasi?
-            # class batteryPercentage():
-            #     self.sicshire
-            #     self.value
-            #     def update(self):
-            #         update()
+            
 
 
 # use test() for debug only
@@ -164,7 +178,6 @@ def test():
 
 
 # test()
-
 if __name__ == "__main__":
     while True:
         # main()
