@@ -13,11 +13,13 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 String command_got;
 String arguments_got;
+char end = ';';
+char sep = '>';
 
 bool is_lcd_updated = 0;
 
 int battery_percentage;
-bool battery_charge_state;
+bool battery_is_charing;
 
 int pulse_in(uint8_t pin, uint8_t state, int timeout_ms){
     /* new pulse_in function for miliseconds
@@ -60,7 +62,10 @@ unsigned long wait_serial(unsigned long limit_ms = 0){
 
 void update_all(){
     // update variables only
-    Serial.print("get>all;");
+    Serial.print("get");
+    Serial.print(sep);
+    Serial.print("all");
+    Serial.print(end);
     // is_lcd_updated = false;
 }
 
@@ -71,29 +76,34 @@ void update_lcd(){
     lcd.print("batt:");
     lcd.print(battery_percentage);
     lcd.print("%");
-    if (battery_charge_state == true){lcd.print("charging");
-    } else                           {lcd.print("discharg");}
+    if (battery_is_charing == true){lcd.print("charging");
+    } else                         {lcd.print("discharg");}
 
     delay(1000);
     is_lcd_updated = true;
 }
 
-void send_log(String message){
-    // act("log", message);
-    Serial.print("log>");
+void log_add(String message){
+    Serial.print("log");
+    Serial.print(sep);
     Serial.print(message);
-    Serial.print(";");
+}
+
+void log_send(){
+    Serial.print(end);
 }
 
 void act(String command_got, String arguments_got){
-    lcd.clear();
-    lcd.print("act:");
-    lcd.print(command_got);
-    lcd.setCursor(0, 1);
-    lcd.print(arguments_got);
-    delay(1000);
+    // change arduino variables or ..
+    // lcd.clear();
+    // lcd.print("act:");
+    // lcd.print(command_got);
+    // lcd.setCursor(0, 1);
+    // lcd.print(arguments_got);
+    // delay(1000);
 
-    send_log("Acting c: " + command_got + " & a: " + arguments_got + ";");
+    log_add("X: act(" + command_got + ", " + arguments_got + ")");
+    log_send();
 
     if (command_got == "HELLO_" and arguments_got == "ARDUINO"){
         delay(1);  // pass
@@ -103,26 +113,28 @@ void act(String command_got, String arguments_got){
     is_lcd_updated = false;
     if (command_got == "batt_p"){
         battery_percentage = arguments_got.toInt();
+        // lcd.init();  // may there is cable connection fail,it initializes lcd
         // lcd.clear();
         // lcd.print("bt_p>");
         // lcd.print(battery_percentage);
         // delay(1000);
     } else if (command_got == "batt_c"){
         if (arguments_got == "0"){
-            battery_charge_state = false;
+            battery_is_charing = false;
         } else {
-            battery_charge_state = true;
+            battery_is_charing = true;
         }
     } else if (command_got == "charge_pc"){
+        log_add("X: digitalWrite(relayPin,"+command_got+")");
+        log_send();
         if (arguments_got == "0"){
             digitalWrite(relayPin, 0);
-            send_log("Relay turned of.");
         } else {
             digitalWrite(relayPin, 1);
-            send_log("Relay turned on.");
         }
     } else {
-        send_log("unknown command: " + command_got + "and arguments: " + arguments_got + ";");
+        log_add("E: Unknown cmd,arg: " + command_got + "," + arguments_got);
+        log_send();
         lcd.clear();
         lcd.print("c:");
         lcd.print(command_got);
@@ -150,14 +162,19 @@ void setup() {
     // Serial
     Serial.begin(9600);
     wait_serial();
-    command_got = Serial.readStringUntil(';');
+    command_got = Serial.readStringUntil(sep);
+    arguments_got = Serial.readStringUntil(end);
     lcd.clear();
     lcd.setCursor(0,1);
     lcd.print(command_got);
+    lcd.print(sep);
+    lcd.print(arguments_got);
+    lcd.print(end);
     lcd.setCursor(0,0);
-    if (command_got=="HELLO_>ARDUINO"){
+    if (command_got=="HELLO_" and arguments_got == "ARDUINO"){
         lcd.print("message got!");
         Serial.print("HELLO_PYTHON");
+        Serial.print(end);
     } else {
         // if port not python port....
         lcd.print("gotAnotherMesage");
@@ -193,10 +210,13 @@ void loop() {
 
         // --------------------------------------
         if (i % 100 == 0){
-            Serial.print("HELLO_>PYTHON;");
+            Serial.print("HELLO_");
+            Serial.print(sep);
+            Serial.print("PYTHON");
+            Serial.print(end);
             wait_serial();
-            command_got = Serial.readStringUntil('>');
-            arguments_got = Serial.readStringUntil(';');
+            command_got = Serial.readStringUntil(sep);
+            arguments_got = Serial.readStringUntil(end);
             act(command_got, arguments_got);
         }
         if (is_lcd_updated == false){
@@ -209,9 +229,9 @@ void loop() {
         } else {  // data
             // update message got, data analize
             // = update values
-            // = update lcd
-            command_got = Serial.readStringUntil('>');
-            arguments_got = Serial.readStringUntil(';');
+            // = update lcd 
+            command_got = Serial.readStringUntil(sep);
+            arguments_got = Serial.readStringUntil(end);
             act(command_got, arguments_got);
         }
     }
