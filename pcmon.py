@@ -7,27 +7,22 @@ import psutil
 
 
 info_battery_percentage: int
-info_battery_is_charging: str
+info_battery_is_charging: bool
 f_battery = 200
-
-ser: serial.Serial
-
 
 END = ';'
 SEP = '>'
 TEXT_TO_SEND = "HELLO_"+SEP+"ARDUINO"+END
-TEXT_TO_GET = "HELLO_PYTHON"+END
+TEXT_TO_GET = "HELLO_"+SEP+"PYTHON"+END
 
 BATT_LOW = 50
 BATT_HIGH = 70
-WAIT_CHAR = 30
-# max milisecond needed to transmit all data
 
 # ----------------------------------------------------------------------------
 
 
 # get info from pc
-def get_battery_percentage() -> int:
+def get_batt_percentage() -> int:
     battery = psutil.sensors_battery()
     if battery is not None:
         return int(battery.percent)
@@ -35,7 +30,7 @@ def get_battery_percentage() -> int:
         return 0
 
 
-def get_battery_charge_state() -> bool:
+def get_batt_is_charging() -> bool:
     battery = psutil.sensors_battery()
     return bool(battery.power_plugged)
 
@@ -48,14 +43,6 @@ def send_log(message):
 def act_charge_pc(val: int = 1) -> None:
     # plug or unplug pc
     ser.write(f"charge_pc{SEP}{str(val)}{END}".encode())
-
-
-def wait_char(t=None):
-    # wait char agar gvinda radgan read_until daicdis movides asoebi
-    if t is None:
-        time.sleep(WAIT_CHAR/1000)
-    else:
-        time.sleep(t/1000)
 
 
 # port configuration
@@ -74,9 +61,8 @@ def communicate(ser: serial.Serial) -> None:
     for _ in range(100):
         # TODO timeout by predefined value
         if ser.in_waiting > 0:
-            wait_char()
             a = ser.read_until(END.encode()).decode()
-            print(f"got message from arduino: {a}")
+            # print(f"got message from arduino: {a}")
             if a == TEXT_TO_GET:
                 # time.sleep(1)
                 return
@@ -85,6 +71,10 @@ def communicate(ser: serial.Serial) -> None:
         else:
             time.sleep(0.1)
     raise serial.SerialException()
+
+
+def command_send(cmd: str, arg: str, ser: serial.Serial):
+    ser.write(f"{cmd}{SEP}{arg}{END}".encode())
 
 
 def find_port():
@@ -107,10 +97,10 @@ def find_port():
         # print(f"Port.description = {port.description}")
         try:
             if is_correct_port(port.device):
-                print(f"Success at {port.device}.")
+                print(f"Success in {port.device}.")
                 return port.device
             else:
-                print(f"Fail at: {port.device}.")
+                print(f"Fail in: {port.device}.")
                 break
         except serial.SerialException:
             continue
@@ -129,8 +119,6 @@ def main():
             # get data from arduino
             if not i % 3:
                 if ser.in_waiting != 0:
-                    # print("==something appeared!==")
-                    wait_char(0.6)
                     a = ser.read_until(END.encode()).decode()
                     # print(f"here==={a}")
                     command, arguments = a.strip(END).split(SEP)
@@ -139,20 +127,20 @@ def main():
                     if command == "log":
                         print(f"Arduino: log: {arguments}")
 
-                    elif command + arguments + END == TEXT_TO_GET:  # +END ratoa arvici
+                    elif command + SEP + arguments + END == TEXT_TO_GET:  # +END ratoa arvici
                         ser.write(TEXT_TO_SEND.encode())
                     elif command == "get":
                         if arguments == "all":
                             # print("get all detected!!!!")
-                            ser.write(str(f"batt_p{SEP}{get_battery_percentage()}{END}").encode())
-                            ser.write(str(f"batt_c{SEP}{int(get_battery_charge_state())}{END}").encode())
-                            pass
+                            command_send("batt_p", str(get_batt_percentage()))
+                            command_send("batt_c", str(get_batt_is_charging()))
 
-                        elif arguments == "batt_p":
-                            ser.write(str(f"batt_p{SEP}{get_battery_percentage()}{END}").encode())
+                        # TODO for now commenteds
+                        # elif arguments == "batt_p":
+                        #     command_send("batt_p", str(get_batt_percentage()))
 
-                        elif arguments == "batt_c":
-                            ser.write(str(f"batt_c{SEP}{int(get_battery_charge_state())}{END}").encode())
+                        # elif arguments == "batt_c":
+                        #     command_send("batt_c", str(get_batt_is_charging()))
 
                     else:
                         send_log(f"Unknown command,argument: {command},{arguments}.")
@@ -160,13 +148,13 @@ def main():
             # give data to arduino if it is time!
             # BATTERY
             if not i % f_battery:  # if i%f_battery == 0:
-                info_battery_percentage = get_battery_percentage()
-                info_battery_is_charging = get_battery_charge_state()
+                info_battery_percentage = get_batt_percentage()
+                info_battery_is_charging = get_batt_is_charging()
                 if info_battery_percentage < BATT_LOW and\
                    not info_battery_is_charging:
                     send_log("plug pc sent")
                     act_charge_pc(1)
-                elif info_battery_percentage > BATT_HIGH and \
+                elif info_battery_percentage > BATT_HIGH and\
                      info_battery_is_charging:
                     send_log("unplug pc sent")
                     act_charge_pc(0)
@@ -197,10 +185,12 @@ if __name__ == "__main__":
             main()
         except serial.SerialException:
             time.sleep(5)
-            print("Arduino disconnected!")
+            print("E: Arduino disconnected!")
             continue
-        except Exception as e:  # jobia
-            time.sleep(5)
-            continue
+        # except Exception as e:  # jobia
+        #     print(f"E: {e}; skipped")
+        #     time.sleep(5)
+        #     continue
         except KeyboardInterrupt:
+            print("W: Process is stopped (User request).")
             break
