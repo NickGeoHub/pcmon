@@ -8,20 +8,22 @@ import psutil
 
 info_battery_percentage: int
 info_battery_is_charging: bool
-f_battery = 200
 
 END = ';'
 SEP = '>'
-TEXT_TO_SEND = "HELLO_"+SEP+"ARDUINO"+END
+
+# TODO Solve communication strings was any
+TEXT_TO_SEND = "HELLO_"+SEP+"ARDUINO"  # END removed because command_send() includes it.
 TEXT_TO_GET = "HELLO_"+SEP+"PYTHON"+END
 
+# TODO this variables must be imported and could be changed by user
 BATT_LOW = 50
 BATT_HIGH = 70
+f_battery = 200
+f_input = 5
 
-# ----------------------------------------------------------------------------
 
-
-# get info from pc
+# get pc info
 def get_batt_percentage() -> int:
     battery = psutil.sensors_battery()
     if battery is not None:
@@ -35,48 +37,26 @@ def get_batt_is_charging() -> bool:
     return bool(battery.power_plugged)
 
 
+# just log
 def send_log(message):
     print(f"PC: log: {message}")
 
 
-# send commands & values to arduino
+# sending commands to arduino
+def command_send(ser: serial.Serial, cmd: str, arg: str | None = None):
+    if arg is None:
+        # send command only
+        ser.write(f"{cmd}{END}".encode())
+    else:
+        ser.write(f"{cmd}{SEP}{arg}{END}".encode())
+
+
 def act_charge_pc(val: int = 1) -> None:
     # plug or unplug pc
-    ser.write(f"charge_pc{SEP}{str(val)}{END}".encode())
+    command_send(ser, "charge_pc", str(val))
 
 
-# port configuration
-def is_correct_port(port: str) -> bool:
-    ser = serial.Serial(port)
-    try:
-        communicate(ser)
-        return True
-    except serial.SerialException:
-        return False
-
-
-def communicate(ser: serial.Serial) -> None:
-    time.sleep(5)
-    ser.write(TEXT_TO_SEND.encode())
-    for _ in range(100):
-        # TODO timeout by predefined value
-        if ser.in_waiting > 0:
-            a = ser.read_until(END.encode()).decode()
-            # print(f"got message from arduino: {a}")
-            if a == TEXT_TO_GET:
-                # time.sleep(1)
-                return
-            else:
-                break
-        else:
-            time.sleep(0.1)
-    raise serial.SerialException()
-
-
-def command_send(cmd: str, arg: str, ser: serial.Serial):
-    ser.write(f"{cmd}{SEP}{arg}{END}".encode())
-
-
+# port configuration: find & check
 def find_port():
     ports = serial.tools.list_ports.comports()
     # print(f"Found {len(ports)} ports.")
@@ -108,7 +88,34 @@ def find_port():
     raise serial.SerialException()
 
 
-# main function. (entry)
+def is_correct_port(port: str) -> bool:
+    ser = serial.Serial(port)
+    try:
+        communicate(ser)
+        return True
+    except serial.SerialException:
+        return False
+
+
+def communicate(ser: serial.Serial) -> None:
+    time.sleep(5)
+    command_send(TEXT_TO_SEND, ser=ser)
+    for _ in range(100):
+        # TODO timeout by predefined value
+        if ser.in_waiting > 0:
+            a = ser.read_until(END.encode()).decode()
+            # print(f"got message from arduino: {a}")
+            if a == TEXT_TO_GET:
+                # time.sleep(1)
+                return
+            else:
+                break
+        else:
+            time.sleep(0.1)
+    raise serial.SerialException()
+
+
+# main function
 def main():
     global ser
     ser = serial.Serial(find_port())
@@ -117,30 +124,27 @@ def main():
     while True:
         for i in range(10000):
             # get data from arduino
-            if not i % 3:
+            if not i % f_input:
                 if ser.in_waiting != 0:
                     a = ser.read_until(END.encode()).decode()
-                    # print(f"here==={a}")
+                    # print(f"serial message: {a}{END}")
                     command, arguments = a.strip(END).split(SEP)
-                    # print("message from arduino".center(50, "="))
-                    # print(f"command={command}\nargs={arguments}")  # #
                     if command == "log":
                         print(f"Arduino: log: {arguments}")
-
-                    elif command + SEP + arguments + END == TEXT_TO_GET:  # +END ratoa arvici
-                        ser.write(TEXT_TO_SEND.encode())
+                    elif command + SEP + arguments + END == TEXT_TO_GET:
+                        command_send(ser, TEXT_TO_SEND)
                     elif command == "get":
                         if arguments == "all":
                             # print("get all detected!!!!")
-                            command_send("batt_p", str(get_batt_percentage()))
-                            command_send("batt_c", str(get_batt_is_charging()))
+                            command_send(ser, "batt_p", str(get_batt_percentage()))
+                            command_send(ser, "batt_c", str(get_batt_is_charging()))
 
                         # TODO for now commenteds
                         # elif arguments == "batt_p":
-                        #     command_send("batt_p", str(get_batt_percentage()))
+                        #     command_send(ser, "batt_p", str(get_batt_percentage()))
 
                         # elif arguments == "batt_c":
-                        #     command_send("batt_c", str(get_batt_is_charging()))
+                        #     command_send(ser, "batt_c", str(get_batt_is_charging()))
 
                     else:
                         send_log(f"Unknown command,argument: {command},{arguments}.")
