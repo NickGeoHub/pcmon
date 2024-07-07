@@ -12,9 +12,8 @@ info_battery_is_charging: bool
 END = ';'
 SEP = '>'
 
-# TODO Solve communication strings was any
-TEXT_TO_SEND = "HELLO_"+SEP+"ARDUINO"  # END removed because command_send() includes it.
-TEXT_TO_GET = "HELLO_"+SEP+"PYTHON"+END
+TEXT_TO_SEND = "HELLO_ARDUINO"
+TEXT_TO_GET = "HELLO_PYTHON"
 
 # TODO this variables must be imported and could be changed by user
 BATT_LOW = 50
@@ -37,7 +36,7 @@ def get_batt_is_charging() -> bool:
     return bool(battery.power_plugged)
 
 
-# just log
+# just log sent by pc
 def send_log(message):
     print(f"PC: log: {message}")
 
@@ -99,11 +98,11 @@ def is_correct_port(port: str) -> bool:
 
 def communicate(ser: serial.Serial) -> None:
     time.sleep(5)
-    command_send(TEXT_TO_SEND, ser=ser)
+    command_send(ser, TEXT_TO_SEND, "")
     for _ in range(100):
         # TODO timeout by predefined value
         if ser.in_waiting > 0:
-            a = ser.read_until(END.encode()).decode()
+            a = ser.read_until(END.encode()).decode().strip(END).strip(SEP)
             # print(f"got message from arduino: {a}")
             if a == TEXT_TO_GET:
                 # time.sleep(1)
@@ -124,22 +123,24 @@ def main():
     while True:
         for i in range(10000):
             # get data from arduino
+            # TODO input/output must be controlled by function like act() in pcmon.ino
             if not i % f_input:
                 if ser.in_waiting != 0:
                     a = ser.read_until(END.encode()).decode()
-                    # print(f"serial message: {a}{END}")
+                    # very useful developer comment!
+                    # print(f"serial message: {a}")
                     command, arguments = a.strip(END).split(SEP)
                     if command == "log":
                         print(f"Arduino: log: {arguments}")
-                    elif command + SEP + arguments + END == TEXT_TO_GET:
-                        command_send(ser, TEXT_TO_SEND)
+                    elif command == TEXT_TO_GET and arguments == "":
+                        command_send(ser, TEXT_TO_SEND, "")
                     elif command == "get":
                         if arguments == "all":
                             # print("get all detected!!!!")
                             command_send(ser, "batt_p", str(get_batt_percentage()))
                             command_send(ser, "batt_c", str(get_batt_is_charging()))
 
-                        # TODO for now commenteds
+                        # TODO for now commented
                         # elif arguments == "batt_p":
                         #     command_send(ser, "batt_p", str(get_batt_percentage()))
 
@@ -187,10 +188,10 @@ if __name__ == "__main__":
         # exit()
         try:
             main()
-        except serial.SerialException:
-            time.sleep(5)
-            print("E: Arduino disconnected!")
-            continue
+        # except serial.SerialException:
+        #     time.sleep(5)
+        #     send_log("E: Arduino disconnected!")
+        #     continue
         # except Exception as e:  # jobia
         #     print(f"E: {e}; skipped")
         #     time.sleep(5)

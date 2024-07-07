@@ -59,7 +59,7 @@ unsigned long wait_serial(unsigned long limit_ms = 0){
 
 
 void update_all(){
-    // update variables only
+    /* updates variables only */
     command_send("get", "all");
     // is_lcd_updated = false;
 }
@@ -104,10 +104,10 @@ void command_send(String cmd, String arg){
 void act(String command_got, String arguments_got){
     // change arduino variables or ..
 
-    log_add("X: act(" + command_got + ", " + arguments_got + ")");
+    log_add("X: act(" + command_got + "," + arguments_got + ")");
     log_send();
 
-    if (command_got == "HELLO_" and arguments_got == "ARDUINO"){
+    if (command_got == "HELLO_ARDUINO" and arguments_got == ""){
         return;
     }
 
@@ -121,6 +121,7 @@ void act(String command_got, String arguments_got){
             battery_is_charing = true;
         }
     } else if (command_got == "charge_pc"){
+        // TODO add waring if (is_charging == 1 and got this message anyway)
         log_add("X: digitalWrite(relayPin,"+arguments_got+")");
         log_send();
         if (arguments_got == "0"){
@@ -155,9 +156,11 @@ void setup() {
 
 
     lcd.clear();
-    if (command_got=="HELLO_" and arguments_got == "ARDUINO"){
+    if (command_got=="HELLO_ARDUINO" and arguments_got == ""){
         lcd.print("Sucess in PC!");
-        command_send("HELLO_", "PYTHON");
+        Serial.print("HELLO_PYTHON");
+        Serial.print(sep);
+        Serial.print(end);
     } else {
         // if port not python port....
         lcd.print("gotAnotherMesage");
@@ -201,8 +204,10 @@ void loop() {
         if (i % 50 == 0){
             update_all();
         }
-        if (i % 200 == 0){
-            command_send("HELLO_", "PYTHON");
+        if (i % 100 == 0){
+            Serial.print("HELLO_PYTHON");
+            Serial.print(sep);
+            Serial.print(end);
             wait_serial();
             command_got = Serial.readStringUntil(sep);
             arguments_got = Serial.readStringUntil(end);
