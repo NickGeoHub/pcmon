@@ -50,9 +50,9 @@ def command_send(ser: serial.Serial, cmd: str, arg: str | None = None):
         ser.write(f"{cmd}{SEP}{arg}{END}".encode())
 
 
-def act_charge_pc(val: int = 1) -> None:
+def act_charge_pc(val: bool | int = 1) -> None:
     # plug or unplug pc
-    command_send(ser, "charge_pc", str(val))
+    command_send(ser, "charge_pc", str(int(val)))
 
 
 # port configuration: find & check
