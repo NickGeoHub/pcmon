@@ -1,3 +1,5 @@
+// cpp (.ino) file, code for Arduino board
+
 // board file
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -178,10 +180,12 @@ void setup() {
 // ============================================== LOOP
 void loop() {
     for (int i = 0; i < 1000; i++){
+    // TODO it is possiple to manually change {i} value by while loop and
+    //   if {i%n} matchs decrease i by 1 to loop on same command again
+    //   it avoids time loss for nothing
         // --------------------------------------
         if (wait_serial(200) == 0){  // no data
             // = delay
-            // some delay and user interupt analize (# garet gavitane ^)
 
         } else {  // data
             // update message got, data analize
@@ -193,6 +197,9 @@ void loop() {
         }
 
         // --------------------------------------
+        // TODO holding putton fills serial buffer and error occurs
+        // local or global variable issues
+        // overloading serial causes data loss
         if (pulse_in(butt_pin, 0, 800) == 0){
             // no button click
         } else {
@@ -205,6 +212,8 @@ void loop() {
             update_all();
         }
         if (i % 100 == 0){
+            // periodically check if python is still connected
+            // FIXME arduino may get another data instead of hello response
             Serial.print("HELLO_PYTHON");
             Serial.print(sep);
             Serial.print(end);

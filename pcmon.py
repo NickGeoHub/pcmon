@@ -8,6 +8,7 @@ import psutil
 
 info_battery_percentage: int
 info_battery_is_charging: bool
+is_updated = False
 
 END = ';'
 SEP = '>'
@@ -37,12 +38,12 @@ def get_batt_is_charging() -> bool:
 
 
 # just log sent by pc
-def send_log(message):
+def send_log(message) -> None:
     print(f"PC: log: {message}")
 
 
 # sending commands to arduino
-def command_send(ser: serial.Serial, cmd: str, arg: str | None = None):
+def command_send(ser: serial.Serial, cmd: str, arg: str | None = None) -> None:
     if arg is None:
         # send command only
         ser.write(f"{cmd}{END}".encode())
@@ -56,7 +57,7 @@ def act_charge_pc(val: bool | int = 1) -> None:
 
 
 # port configuration: find & check
-def find_port():
+def find_port() -> str:
     ports = serial.tools.list_ports.comports()
     # print(f"Found {len(ports)} ports.")
 
@@ -122,6 +123,7 @@ def main():
 
     while True:
         for i in range(10000):
+            is_updated = True
             # get data from arduino
             # TODO input/output must be controlled by function like act() in pcmon.ino
             if not i % f_input:
@@ -137,6 +139,7 @@ def main():
                     elif command == "get":
                         if arguments == "all":
                             # print("get all detected!!!!")
+                            is_updated = False
                             command_send(ser, "batt_p", str(get_batt_percentage()))
                             command_send(ser, "batt_c", str(get_batt_is_charging()))
 
@@ -152,7 +155,7 @@ def main():
 
             # give data to arduino if it is time!
             # BATTERY
-            if not i % f_battery:  # if i%f_battery == 0:
+            if not i % f_battery or not is_updated:  # if i%f_battery == 0:
                 info_battery_percentage = get_batt_percentage()
                 info_battery_is_charging = get_batt_is_charging()
                 if info_battery_percentage < BATT_LOW and\
@@ -195,7 +198,7 @@ if __name__ == "__main__":
         # except Exception as e:  # jobia
         #     print(f"E: {e}; skipped")
         #     time.sleep(5)
-        #     continue
+        #     continue  # or break?
         except KeyboardInterrupt:
             print("W: Process is stopped (User request).")
             break
