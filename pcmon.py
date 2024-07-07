@@ -188,10 +188,10 @@ if __name__ == "__main__":
         # exit()
         try:
             main()
-        # except serial.SerialException:
-        #     time.sleep(5)
-        #     send_log("E: Arduino disconnected!")
-        #     continue
+        except serial.SerialException:
+            time.sleep(5)
+            send_log("E: Arduino disconnected!")
+            continue
         # except Exception as e:  # jobia
         #     print(f"E: {e}; skipped")
         #     time.sleep(5)
