@@ -92,10 +92,6 @@ void log_send(){
 }
 
 
-// TODO for any  TEXT_TO_GET/SEND add new fx or use just Serial.print to avoid  using SEP|END in (TEXT_TO_GET/SEND)
-// if use fx do like in python file (hard)
-// if use just Serial.print, print END too (complicated)
-// choose tomorrow.. or newer..
 void command_send(String cmd, String arg){
     Serial.print(cmd);
     Serial.print(sep);
