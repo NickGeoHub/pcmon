@@ -9,11 +9,7 @@
 2. Upload pcmon.ino to Arduino board.
 3. Assemble circuit.
 4. Download [python](https://www.python.org/downloads/) (if you dont have).
-5. Run following command:
-
-'''bash
-pip install -r requirements.txt'
-'''
+5. Run following command: 'pip install -r requirements.txt'
 
 ## Usage
 
@@ -21,5 +17,5 @@ pip install -r requirements.txt'
 2. Connect Arduino board to pc.
 
 '''bash
-pip install -r requirements.txt'
+pip install -r requirements.txt
 '''
