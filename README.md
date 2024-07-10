@@ -15,7 +15,3 @@
 
 1. Run python file.
 2. Connect Arduino board to pc.
-
-'''bash
-pip install -r requirements.txt
-'''
