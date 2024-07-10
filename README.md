@@ -1,7 +1,7 @@
 # pcmon
-This project is created by Nick (nniikka1234@gmail.com)
-This project includes two files: pcmon.ino and pcmon.py
-Programmed Arduino board connected to pc, where pcmon.py script is running, controls pc battery and charges pc if needed.
+* This project is created by Nick (nniikka1234@gmail.com).
+* This project includes two files: pcmon.ino and pcmon.py.
+* Programmed Arduino board connected to pc, where pcmon.py script is running, controls pc battery and charges pc if needed.
 
 ## Setup
 
